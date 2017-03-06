@@ -33,6 +33,7 @@ src
 OBJS +=  \
 src/driver_init.o \
 driver_isr.o \
+src/tc16.o \
 src/tc8.o \
 atmel_start.o \
 src/ccp.o \
@@ -42,6 +43,7 @@ main.o
 OBJS_AS_ARGS +=  \
 "src/driver_init.o" \
 "driver_isr.o" \
+"src/tc16.o" \
 "src/tc8.o" \
 "atmel_start.o" \
 "src/ccp.o" \
@@ -54,6 +56,7 @@ DEPS := $(OBJS:%.o=%.d)
 DEPS_AS_ARGS +=  \
 "src/driver_init.d" \
 "driver_isr.d" \
+"src/tc16.d" \
 "src/tc8.d" \
 "atmel_start.d" \
 "src/ccp.d" \

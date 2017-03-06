@@ -19,6 +19,7 @@
 #include <sysctrl.h>
 #include <tc8.h>
 #include <tc8.h>
+#include <tc16.h>
 
 #ifdef __cplusplus
 extern "C" {

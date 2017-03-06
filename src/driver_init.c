@@ -31,6 +31,22 @@ void tc8_2_init(void)
 	TIMER_1_init();
 }
 
+void tc16_1_init(void)
+{
+
+	// Set pin direction to output
+	PB1_set_dir(PORT_DIR_OUT);
+
+	PB1_set_level(
+	    // <y> Initial level
+	    // <id> pad_initial_level
+	    // <false"> Low
+	    // <true"> High
+	    false);
+
+	TIMER_2_init();
+}
+
 void system_init()
 {
 	mcu_init();
@@ -52,4 +68,6 @@ void system_init()
 	tc8_0_init();
 
 	tc8_2_init();
+
+	tc16_1_init();
 }

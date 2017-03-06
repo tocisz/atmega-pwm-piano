@@ -25,3 +25,17 @@ ISR(TIMER0_OVF_vect)
 		LED_toggle_level();
 	}
 }
+
+#include "freq.h"
+uint8_t idx = 0;
+
+ISR(TIMER1_COMPA_vect)
+{
+	OCR1A = freq_seq[idx];
+	idx = (idx+1) % freq_seq_len;
+}
+
+ISR(PCI1_vect)
+{
+
+}

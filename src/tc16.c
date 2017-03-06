@@ -1,7 +1,7 @@
 /**
  * \file
  *
- * \brief TC8 related functionality implementation.
+ * \brief TC16 related functionality implementation.
 *
  * Copyright (C) 2016 Atmel Corporation. All rights reserved.
  *
@@ -41,47 +41,30 @@
  *
  */
 
-#include <tc8.h>
+#include <tc16.h>
 #include <utils.h>
 
 /**
- * \brief Initialize TIMER_0 interface
+ * \brief Initialize TIMER_2 interface
  */
-int8_t TIMER_0_init()
+int8_t TIMER_2_init()
 {
-	/* Enable TC0 */
-	PRR &= ~(1 << PRTIM0);
-	TCCR0A = (0 << COM0A1) | (0 << COM0A0) | // Normal port operation, OCA disconnected
-	         (0 << COM0B1) | (0 << COM0B0) | // Normal port operation, OCA disconnected
-	         (0 << WGM01) | (0 << WGM00);    // Mode 0 Normal
+	/* Enable TC1 */
+	PRR &= ~(1 << PRTIM1);
 
-	TCCR0B = (0 << WGM02) |                           // Mode 0 Normal
-	         (0 << CS02) | (1 << CS01) | (0 << CS00); // IO clock divided by 8
+	TCCR1A = (0 << COM1A1) | (1 << COM1A0) | // Toggle OCA on Compare Match
+	         (0 << COM1B1) | (0 << COM1B0) | // Normal port operation, OCB disconnected
+	         (0 << WGM11) | (0 << WGM10);    // Mode 4 CTC
 
-	TIMSK0 = (0 << OCIE0B) | // Disable output compare match B interrupt
-	         (0 << OCIE0A) | // Disable output compare match A interrupt
-	         (1 << TOIE0);   // Enable overflow interrupt
+	TCCR1B = (0 << WGM13) | (1 << WGM12) |            // Mode 4 CTC
+	         (0 << ICNC1) |                           // Disable input capture noise canceler
+	         (0 << ICES1) |                           // Falling edge will trigger input capture
+	         (0 << CS12) | (0 << CS11) | (1 << CS10); // No prescaling
 
-	return 0;
-}
-
-/**
- * \brief Initialize TIMER_1 interface
- */
-int8_t TIMER_1_init()
-{
-	/* Enable TC2 */
-	PRR &= ~(1 << PRTIM2);
-	TCCR2A = (0 << COM2A1) | (0 << COM2A0) | // Normal port operation, OCA disconnected
-	         (1 << COM2B1) | (0 << COM2B0) | // Normal port operation, OCA disconnected
-	         (0 << WGM21) | (1 << WGM20);    // Mode 1 Phase Correct
-
-	TCCR2B = (0 << WGM22) |                           // Mode 1 Phase Correct
-	         (0 << CS22) | (0 << CS21) | (1 << CS20); // No prescaling
-
-	TIMSK2 = (0 << OCIE2B) | // Disable output compare match B interrupt
-	         (0 << OCIE2A) | // Disable output compare match A interrupt
-	         (0 << TOIE2);   // Disable overflow interrupt
+	TIMSK1 = (0 << ICIE1) |  // Disable input capture interrupt
+	         (0 << OCIE1B) | // Disable output compare match B interrupt
+	         (1 << OCIE1A) | // Enable output compare match A interrupt
+	         (0 << TOIE1);   // Disable overflow interrupt
 
 	return 0;
 }

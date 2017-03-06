@@ -1,7 +1,7 @@
 /**
  * \file
  *
- * \brief TC8 related functionality implementation.
+ * \brief TC16 related functionality declaration.
 *
  * Copyright (C) 2016 Atmel Corporation. All rights reserved.
  *
@@ -41,47 +41,57 @@
  *
  */
 
-#include <tc8.h>
-#include <utils.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef _TC16_H_INCLUDED
+#define _TC16_H_INCLUDED
+
+#include <compiler.h>
 
 /**
- * \brief Initialize TIMER_0 interface
+ * \addtogroup tc16 driver
+ *
+ * \section tc16_rev Revision History
+ * - v0.0.0.1 Initial Commit
+ *
+ *@{
  */
-int8_t TIMER_0_init()
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * \brief Initialize TIMER_2 interface
+ *
+ * \return Initialization status.
+ */
+int8_t TIMER_2_init();
+
+/**
+ * \brief Set compare channel A value
+ *
+ * \param[in] value The new compare value to set
+ */
+static inline void TIMER_2_set_comp_a(uint16_t value)
 {
-	/* Enable TC0 */
-	PRR &= ~(1 << PRTIM0);
-	TCCR0A = (0 << COM0A1) | (0 << COM0A0) | // Normal port operation, OCA disconnected
-	         (0 << COM0B1) | (0 << COM0B0) | // Normal port operation, OCA disconnected
-	         (0 << WGM01) | (0 << WGM00);    // Mode 0 Normal
-
-	TCCR0B = (0 << WGM02) |                           // Mode 0 Normal
-	         (0 << CS02) | (1 << CS01) | (0 << CS00); // IO clock divided by 8
-
-	TIMSK0 = (0 << OCIE0B) | // Disable output compare match B interrupt
-	         (0 << OCIE0A) | // Disable output compare match A interrupt
-	         (1 << TOIE0);   // Enable overflow interrupt
-
-	return 0;
+	OCR1A = value;
 }
 
 /**
- * \brief Initialize TIMER_1 interface
+ * \brief Set compare channel B value
+ *
+ * \param[in] value The new compare value to set
  */
-int8_t TIMER_1_init()
+static inline void TIMER_2_set_comp_b(uint16_t value)
 {
-	/* Enable TC2 */
-	PRR &= ~(1 << PRTIM2);
-	TCCR2A = (0 << COM2A1) | (0 << COM2A0) | // Normal port operation, OCA disconnected
-	         (1 << COM2B1) | (0 << COM2B0) | // Normal port operation, OCA disconnected
-	         (0 << WGM21) | (1 << WGM20);    // Mode 1 Phase Correct
-
-	TCCR2B = (0 << WGM22) |                           // Mode 1 Phase Correct
-	         (0 << CS22) | (0 << CS21) | (1 << CS20); // No prescaling
-
-	TIMSK2 = (0 << OCIE2B) | // Disable output compare match B interrupt
-	         (0 << OCIE2A) | // Disable output compare match A interrupt
-	         (0 << TOIE2);   // Disable overflow interrupt
-
-	return 0;
+	OCR1B = value;
 }
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _TC16_H_INCLUDED */
