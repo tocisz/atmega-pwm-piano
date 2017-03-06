@@ -2,12 +2,12 @@
 #include <stdbool.h>
 #include <util/atomic.h>
 
-extern uint8_t EVENT0;
+extern volatile uint8_t EVENT0;
 
 // see driver_isr.c
-extern bool button_state_on;
+extern volatile bool button_state_on;
 
-extern uint16_t time;
+extern volatile uint16_t time;
 
 #define BTN_CHG 0
 #define NEW_SOUND_CYCLE 1
@@ -23,9 +23,9 @@ static inline void set_button_change(void) {
 }
 
 static inline void clear_button_change(void) {
-  ATOMIC_BLOCK(ATOMIC_FORCEON) {
+  // ATOMIC_BLOCK(ATOMIC_FORCEON) {
     EVENT0 &= ~(1 << BTN_CHG);
-  }
+  // }
 }
 
 
@@ -38,9 +38,9 @@ static inline void set_new_sound_cycle(void) {
 }
 
 static inline void clear_new_sound_cycle(void) {
-  ATOMIC_BLOCK(ATOMIC_FORCEON) {
+  // ATOMIC_BLOCK(ATOMIC_FORCEON) {
     EVENT0 &= ~(1 << NEW_SOUND_CYCLE);
-  }
+  // }
 }
 
 
@@ -53,9 +53,9 @@ static inline void set_new_512hz_cycle(void) {
 }
 
 static inline void clear_new_512hz_cycle(void) {
-  ATOMIC_BLOCK(ATOMIC_FORCEON) {
+  // ATOMIC_BLOCK(ATOMIC_FORCEON) {
     EVENT0 &= ~(1 << NEW_512HZ_CYCLE);
-  }
+  // }
 }
 
 

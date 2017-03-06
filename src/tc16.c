@@ -63,7 +63,7 @@ int8_t TIMER_2_init()
 
 	TIMSK1 = (0 << ICIE1) |  // Disable input capture interrupt
 	         (0 << OCIE1B) | // Disable output compare match B interrupt
-	         (1 << OCIE1A) | // Enable output compare match A interrupt
+	         (0 << OCIE1A) | // Enable output compare match A interrupt XXX
 	         (0 << TOIE1);   // Disable overflow interrupt
 
 	return 0;

@@ -1,8 +1,10 @@
 #include <atmel_start.h>
 #include <avr/eeprom.h>
+#include <util/atomic.h>
 
 #include "freq.h"
 #include "events.h"
+#include "eeprom.h"
 
 uint16_t freq_table[] = {
   C3_FREQ,
@@ -63,12 +65,12 @@ inline uint16_t decode_length(uint8_t len) {
   }
 }
 
-#include "eeprom.h"
-
 uint8_t melodies_cnt;
 uint8_t current_melody;
 struct melody_general *mptr;
 uint8_t melody_len;
+uint8_t song_buffer[128];
+uint8_t note_index;
 
 // After init_sound() is called, it's necessary to run:
 // next_melody();
@@ -81,6 +83,7 @@ void init_sound() {
 
 void read_next_note();
 void next_melody() {
+  note_index = 0;
   ++current_melody;
   if (current_melody == melodies_cnt) {
     current_melody = 0;
@@ -94,6 +97,8 @@ void next_melody() {
   }
   uint8_t *len_ptr = &mptr->melody_len;
   melody_len = eeprom_read_byte(len_ptr);
+
+  eeprom_read_block(song_buffer, mptr->melody, melody_len);
 
   // to be ready
   read_next_note();
@@ -119,14 +124,17 @@ uint8_t scheduler_op = SCHEDULED_SOUND_START;
 const uint8_t note_gap_time = 10;
 uint16_t next_note_time = 0;
 
-uint8_t buffer[2048];
-
 void start_generator(void) {
-  buffer[2047] = 1;
 	/* Enable TC1 */
-	PRR &= ~(1 << PRTIM1);
-  // Toggle OCA on Compare Match
-  TCCR1A |= (0 << COM1A1) | (1 << COM1A0);
+	//PRR &= ~(1 << PRTIM1);
+  // TODO czy wyłączanie generatora powoduje zwiechy?
+  // czy może to przerwanie (OCA match)
+  // UWAGA:
+  // 1. Zwiecha powoduje, że dioda Glow świeciła na tym samym poziomie
+  // 2. Podczas zwiechy program przechodzi cały czas przez główną pętlę
+  //   (danie tam resetu watchdoga sprawia, że reset nie następuje)
+  // 3. Mimo zwiechy naciśnięcie przycisku powoduje zgaszenie
+  //    LEDa stanu odtwarzania.
 
 	switch (mode) {
 		case MODE_SIMPLE:
@@ -136,14 +144,17 @@ void start_generator(void) {
 		// 	TIMER_2_set_comp_a(freq_seq[0]);
 		// 	break;
 	}
+
+  // Toggle OCA on Compare Match
+  TCCR1A |= (0 << COM1A1) | (1 << COM1A0);
 }
 
 void stop_generator(void) {
   // cli();
   // Disconnect OCA
-  TCCR1A &= ~((0 << COM1A1) | (0 << COM1A0));
+  TCCR1A &= ~((1 << COM1A1) | (1 << COM1A0));
 	/* Disable TC1 */
-	PRR |= 1 << PRTIM1;
+	//PRR |= 1 << PRTIM1;
   SPEEKER_set_level(false);
   // sei();
 }
@@ -158,20 +169,25 @@ void sound_off(void) {
   stop_generator();
 }
 
-inline void schedule_gap(void) {
-  next_note_time = time + next_note_length - note_gap_time;
+inline void schedule_gap(uint16_t scheduler_time) {
+  next_note_time = scheduler_time + next_note_length - note_gap_time;
   scheduler_op = SCHEDULED_SOUND_STOP;
 }
 
-inline void schedule_note(void) {
-  next_note_time = time + note_gap_time;
+inline void schedule_note(uint16_t scheduler_time) {
+  next_note_time = scheduler_time + note_gap_time;
   scheduler_op = SCHEDULED_SOUND_START;
 }
 
 void start_play(void) {
   last_note = false;
   sound_on();
-  schedule_gap();
+  uint16_t start_time;
+  ATOMIC_BLOCK(ATOMIC_FORCEON)
+  {
+    start_time = time;
+  }
+  schedule_gap(start_time);
   scheduler_on = true;
 
   // to be ready
@@ -199,7 +215,6 @@ void start_new_cycle(void) {
 
 
 /////////////// MELODY ////////////////
-uint8_t note_index = 0;
 void read_next_note() {
   if (note_index == melody_len) {
     note_index = 0;
@@ -207,8 +222,7 @@ void read_next_note() {
     return;
   }
 
-  uint8_t *data_ptr = mptr->melody;
-  uint8_t data = eeprom_read_byte(data_ptr + (note_index++));
+  uint8_t data = song_buffer[note_index++];
   mode_simple_freq = decode_freq(data);
   next_note_length = decode_length(data);
 }
@@ -219,7 +233,13 @@ void sound_scheduler() {
   if (!scheduler_on)
     return;
 
-  if (time == next_note_time) {
+  uint16_t scheduler_time;
+  ATOMIC_BLOCK(ATOMIC_FORCEON)
+  {
+    scheduler_time = time;
+  }
+
+  if (scheduler_time == next_note_time) {
     switch (scheduler_op) {
       case SCHEDULED_SOUND_STOP:
         if (last_note) {
@@ -227,12 +247,12 @@ void sound_scheduler() {
           set_finished_playing();
         } else {
           sound_off();
-          schedule_note();
+          schedule_note(scheduler_time);
         }
         break;
       case SCHEDULED_SOUND_START:
         sound_on();
-        schedule_gap();
+        schedule_gap(scheduler_time);
         read_next_note();
         break;
     }

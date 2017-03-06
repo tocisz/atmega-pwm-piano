@@ -15,8 +15,6 @@
 // contdown to limit button instability
 uint8_t button_block;
 
-bool button_state_on = false;
-
 static inline void handle_button_state_change(void) {
 	bool level = !BUTTON_get_level();
 	if (button_state_on != level) {
