@@ -1,37 +1,70 @@
 #include <atmel_start.h>
-#include <avr/eeprom.h>
-#include "freq.h"
+#include <avr/wdt.h>
 
-uint16_t EEMEM ee_freq_seq[MAX_SEQ_LEN] = {65000,C3,0};
-uint16_t freq_seq_len;
-uint16_t freq_seq[MAX_SEQ_LEN];
+#include "sound.h"
 
-void load_freq_table(void) {
-	uint16_t freq;
-	const uint16_t *ptr = ee_freq_seq;
-	uint8_t i = 0;
-	while (i < MAX_SEQ_LEN) {
-		freq = eeprom_read_word(ptr++);
-		if (freq == 0) {
-			break;
-		}
-		freq_seq[i++] = freq;
+/////////////////// GOLW //////////////////
+uint8_t power = 0;
+int8_t dir = 1;
+
+static inline void animate_glow(void) {
+	TIMER_1_set_comp_b(power);
+	power += dir;
+	if (power == 0xff || (power == 0)) {
+		dir = -dir;
 	}
-	freq_seq_len = i;
 }
+///////////////////////////////////////////
+
+#include "events.h"
+
+bool playing = false;
 
 int main(void)
 {
 	/* Initializes MCU, drivers and middleware */
 	atmel_start_init();
-	load_freq_table();
+	set_sleep_mode(SLEEP_MODE_IDLE);
+
+	init_sound();
 	sei();
 
-	OCR1A = freq_seq[0]; // 220Hz
-
-	set_sleep_mode(SLEEP_MODE_IDLE);
-	sleep_enable();
 	while (1) {
+
+		wdt_reset();
+
+		if (is_button_change()) {
+			clear_button_change();
+			if (button_state_on) {
+				if (!playing) {
+					next_melody();
+					start_play();
+				} else {
+					stop_play();
+				}
+				playing = !playing;
+				HEART_set_level(playing);
+			}
+		}
+
+		if (is_new_sound_cycle()) {
+			clear_new_sound_cycle();
+			start_new_cycle();
+		}
+
+		if (is_new_512hz_cycle()) {
+			clear_new_512hz_cycle();
+			animate_glow();
+			sound_scheduler();
+		}
+
+		if (is_finished_playing()) {
+			clear_finished_playing();
+			playing = false;
+			HEART_set_level(playing);
+		}
+
 		sleep_mode();
+
 	}
 }

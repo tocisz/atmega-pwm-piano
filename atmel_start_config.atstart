@@ -100,11 +100,11 @@ drivers:
     configuration:
       tc16_coma: Toggle OCA on Compare Match
       tc16_comb: Normal port operation, OCB disconnected
-      tc16_cs: No clock source (Timer/Counter stopped)
+      tc16_cs: No prescaling
       tc16_ices: Falling edge will trigger input capture
       tc16_icie: false
       tc16_icnc: false
-      tc16_ociea: false
+      tc16_ociea: true
       tc16_ocieb: false
       tc16_toie: false
     optional_signals:
@@ -124,22 +124,29 @@ drivers:
         configuration:
           tc16_clock_source: CLKio
 pads:
-  PD3:
+  GLOW:
     name: PD3
     definition: Atmel:ATMega48_88_168_328_drivers:1.0.0::ATmega88-20PU::pad::PD3
     mode: Digital output
-    user_label: PD3
+    user_label: GLOW
     configuration: null
-  LED:
+  HEART:
     name: PB0
     definition: Atmel:ATMega48_88_168_328_drivers:1.0.0::ATmega88-20PU::pad::PB0
     mode: Digital output
-    user_label: LED
+    user_label: HEART
     configuration: null
-  PB1:
+  SPEEKER:
     name: PB1
     definition: Atmel:ATMega48_88_168_328_drivers:1.0.0::ATmega88-20PU::pad::PB1
     mode: Digital output
-    user_label: PB1
+    user_label: SPEEKER
     configuration: null
+  BUTTON:
+    name: PC5
+    definition: Atmel:ATMega48_88_168_328_drivers:1.0.0::ATmega88-20PU::pad::PC5
+    mode: Digital input
+    user_label: BUTTON
+    configuration:
+      pad_pull_config: Pull-up
 toolchain_options: []

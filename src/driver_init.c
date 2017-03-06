@@ -19,9 +19,9 @@ void tc8_2_init(void)
 {
 
 	// Set pin direction to output
-	PD3_set_dir(PORT_DIR_OUT);
+	GLOW_set_dir(PORT_DIR_OUT);
 
-	PD3_set_level(
+	GLOW_set_level(
 	    // <y> Initial level
 	    // <id> pad_initial_level
 	    // <false"> Low
@@ -35,9 +35,9 @@ void tc16_1_init(void)
 {
 
 	// Set pin direction to output
-	PB1_set_dir(PORT_DIR_OUT);
+	SPEEKER_set_dir(PORT_DIR_OUT);
 
-	PB1_set_level(
+	SPEEKER_set_level(
 	    // <y> Initial level
 	    // <id> pad_initial_level
 	    // <false"> Low
@@ -54,16 +54,30 @@ void system_init()
 	// PORT on PB0
 
 	// Set pin direction to output
-	LED_set_dir(PORT_DIR_OUT);
+	HEART_set_dir(PORT_DIR_OUT);
 
-	LED_set_level(
+	HEART_set_level(
 	    // <y> Initial level
 	    // <id> pad_initial_level
 	    // <false"> Low
 	    // <true"> High
 	    false);
 
+	// PORT on PC5
+
+	// Set pin direction to input
+	BUTTON_set_dir(PORT_DIR_IN);
+
+	BUTTON_set_pull_mode(
+	    // <y> Pull configuration
+	    // <id> pad_pull_config
+	    // <PORT_PULL_OFF"> Off
+	    // <PORT_PULL_UP"> Pull-up
+	    PORT_PULL_UP);
+
 	sysctrl_init();
+
+	WDT_0_init();
 
 	tc8_0_init();
 

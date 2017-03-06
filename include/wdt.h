@@ -1,7 +1,7 @@
 /**
  * \file
  *
- * \brief TC16 related functionality implementation.
+ * \brief WDT related functionality declaration.
 *
  * Copyright (C) 2016 Atmel Corporation. All rights reserved.
  *
@@ -41,30 +41,33 @@
  *
  */
 
-#include <tc16.h>
-#include <utils.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef _WDT_H_INCLUDED
+#define _WDT_H_INCLUDED
+
+#include <compiler.h>
 
 /**
- * \brief Initialize TIMER_2 interface
+ * \addtogroup wdt WDT driver
+ *
+ * \section wdt_rev Revision History
+ * - v0.0.0.1 Initial Commit
+ *
+ *@{
  */
-int8_t TIMER_2_init()
-{
-	/* Enable TC1 */
-	PRR &= ~(1 << PRTIM1);
 
-	TCCR1A = (0 << COM1A1) | (0 << COM1A0) | // Normal port operation, OCA disconnected
-	         (0 << COM1B1) | (0 << COM1B0) | // Normal port operation, OCB disconnected
-	         (0 << WGM11) | (0 << WGM10);    // Mode 4 CTC
+/**
+ * \brief Initialize WDT interface
+ *
+ * \return Initialization status.
+ */
+int8_t WDT_0_init();
 
-	TCCR1B = (0 << WGM13) | (1 << WGM12) |            // Mode 4 CTC
-	         (0 << ICNC1) |                           // Disable input capture noise canceler
-	         (0 << ICES1) |                           // Falling edge will trigger input capture
-	         (0 << CS12) | (0 << CS11) | (1 << CS10); // No prescaling
-
-	TIMSK1 = (0 << ICIE1) |  // Disable input capture interrupt
-	         (0 << OCIE1B) | // Disable output compare match B interrupt
-	         (1 << OCIE1A) | // Enable output compare match A interrupt
-	         (0 << TOIE1);   // Disable overflow interrupt
-
-	return 0;
+#ifdef __cplusplus
 }
+#endif
+
+#endif /* _WDT_H_INCLUDED */

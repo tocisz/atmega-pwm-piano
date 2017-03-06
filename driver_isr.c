@@ -9,33 +9,49 @@
 #include <atmel_start.h>
 #include <compiler.h>
 
-uint8_t cnt = 0;
-uint8_t power = 0;
-int8_t dir = 1;
+#include "sound.h"
+#include "events.h"
+
+// contdown to limit button instability
+uint8_t button_block;
+
+bool button_state_on = false;
+
+static inline void handle_button_state_change(void) {
+	bool level = !BUTTON_get_level();
+	if (button_state_on != level) {
+		button_state_on = level;
+		set_button_change();
+	}
+}
 
 ISR(TIMER0_OVF_vect)
 {
-	OCR2B = power;
-	power += dir;
-	if (power == 0xff || (power == 0)) {
-		dir = -dir;
-	}
+	set_new_512hz_cycle();
 
-	if (++cnt == 0) {
-		LED_toggle_level();
+	++time;
+
+	if (button_block == 1) { // check state at the end of blocked period
+		handle_button_state_change();
+	}
+	if (button_block > 0) {
+		--button_block;
 	}
 }
 
-#include "freq.h"
-uint8_t idx = 0;
 
 ISR(TIMER1_COMPA_vect)
 {
-	OCR1A = freq_seq[idx];
-	idx = (idx+1) % freq_seq_len;
+	set_new_sound_cycle();
 }
 
-ISR(PCI1_vect)
+ISR(PCINT1_vect)
 {
+	if (button_block)
+		return;
 
+	handle_button_state_change();
+
+	// 1 can give arbitrary small delay (we don't reset timer)
+	button_block = 2;
 }

@@ -6,4 +6,9 @@
 void atmel_start_init(void)
 {
 	system_init();
+
+  // enable PCIE1
+	PCICR = (1 << PCIE1);
+	// enable interrupt on INT13
+	PCMSK1 = (1 << PCINT13);
 }
