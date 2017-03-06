@@ -227,8 +227,6 @@ void read_next_note() {
   next_note_length = decode_length(data);
 }
 
-#include <util/delay.h>
-
 void sound_scheduler() {
   if (!scheduler_on)
     return;
